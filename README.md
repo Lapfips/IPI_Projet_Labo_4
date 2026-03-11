@@ -57,3 +57,23 @@ Les schémas sont accessible en SVG ici :
 
 - [Schéma réseau (SVG)](schemas/schema_reseau.svg)
 - [Schéma physique (SVG)](schemas/schema_physique.svg)
+
+## TODO
+
+- Docs
+  - Apache2
+  - Confluence
+  - DHCP
+  - DNS
+  - GLPI
+  - Guacamole
+  - Jira
+  - pfSense
+  - Proxmox
+  - Terraform
+  - Zabbix
+
+- Reviews and tests
+  - Ansible
+  - Terraform
+  - Scripts
