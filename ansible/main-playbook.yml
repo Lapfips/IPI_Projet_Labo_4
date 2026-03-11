@@ -1,0 +1,36 @@
+---
+- name: Install common packages, setup firewall and zabbix agent
+  hosts: all
+  roles:
+    - common
+
+- name: Setup DHCP/DNS server(s)
+  hosts: network_servers
+  roles:
+    - dhcp
+    - dns
+
+- name: Setup Bastion server(s)
+  hosts: bastion_servers
+  roles:
+    - bastion
+
+- name: Setup Cloud server(s)
+  hosts: cloud_servers
+  roles:
+    - nextcloud
+
+- name: Setup Monitoring server(s)
+  hosts: monitoring_servers
+  roles:
+    - zabbix
+
+- name: Setup Ticketing server(s)
+  hosts: ticketing_servers
+  roles:
+    - glpi
+
+- name: Setup Database server(s)
+  hosts: database_servers
+  roles:
+    - postgreSQL

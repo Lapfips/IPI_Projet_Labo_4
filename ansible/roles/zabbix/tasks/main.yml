@@ -1,0 +1,64 @@
+- name: Fail when Zabbix role is executed on unsupported platform
+  fail:
+      msg: "The Zabbix role currently supports Debian-family hosts only."
+  when: ansible_facts['os_family'] not in ['Debian']
+
+- name: Install Zabbix packages (Debian)
+  apt:
+      name:
+          - zabbix-server-pgsql
+          - zabbix-frontend-php
+          - zabbix-apache-conf
+          - zabbix-sql-scripts
+          - python3-psycopg2
+      state: present
+      update_cache: yes
+  become: true
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Configure Zabbix server
+  template:
+      src: zabbix_server.conf.j2
+      dest: /etc/zabbix/zabbix_server.conf
+      owner: root
+      group: zabbix
+      mode: "0640"
+  become: true
+  notify: Restart zabbix server
+
+- name: Configure PHP timezone for Zabbix frontend
+  lineinfile:
+      path: /etc/zabbix/apache.conf
+      regexp: '^\s*php_value date.timezone'
+      line: "        php_value date.timezone {{ ZABBIX_PHP_TIMEZONE }}"
+  become: true
+  notify: Restart apache for zabbix
+
+- name: Check if Zabbix schema exists
+  shell: |
+      PGPASSWORD='{{ ZABBIX_DB_PASSWORD }}' psql -h {{ ZABBIX_DB_HOST }} \
+        -U {{ ZABBIX_DB_USER }} -d {{ ZABBIX_DB_NAME }} -t \
+        -c "SELECT 1 FROM pg_tables WHERE tablename = 'users';"
+  register: zabbix_schema_check
+  failed_when: false
+  changed_when: false
+
+- name: Import Zabbix database schema
+  shell: |
+      set -o pipefail
+      zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | \
+        PGPASSWORD='{{ ZABBIX_DB_PASSWORD }}' psql -h {{ ZABBIX_DB_HOST }} \
+        -U {{ ZABBIX_DB_USER }} {{ ZABBIX_DB_NAME }}
+  args:
+      executable: /bin/bash
+  become: true
+  environment:
+      PGPASSWORD: "{{ ZABBIX_DB_PASSWORD }}"
+  when: zabbix_schema_check.stdout is defined and zabbix_schema_check.stdout | trim | length == 0
+
+- name: Ensure Zabbix server service is enabled and running
+  service:
+      name: zabbix-server
+      state: started
+      enabled: true
+  become: true

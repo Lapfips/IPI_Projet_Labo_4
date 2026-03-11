@@ -1,0 +1,1 @@
+ZABBIX_DB_PASSWORD: "{{ vault_zabbix_db_password | default(ZABBIX_DB_PASSWORD_DEFAULT) }}"

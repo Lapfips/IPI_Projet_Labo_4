@@ -1,0 +1,5 @@
+vault_admin_username: "admin"
+vault_admin_password: "password"
+vault_become_password: "password"
+vault_ssh_port: "22"
+vault_authorized_keys: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMUST_REPLACE_ME_WITH_REAL_KEY"

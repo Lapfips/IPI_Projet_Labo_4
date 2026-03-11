@@ -1,0 +1,11 @@
+- name: Restart RedHat DHCP service
+  systemd:
+      name: dhcpd
+      state: restarted
+  become: true
+
+- name: Restart Debian DHCP service
+  systemd:
+      name: isc-dhcp-server
+      state: restarted
+  become: true

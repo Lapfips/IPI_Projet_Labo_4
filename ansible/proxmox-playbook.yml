@@ -1,0 +1,6 @@
+---
+- name: Prepare Proxmox host (ISO storage, templates, API user/token, defaults)
+  hosts: proxmox
+  become: true
+  roles:
+    - role: proxmox

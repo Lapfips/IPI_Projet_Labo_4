@@ -1,0 +1,50 @@
+- name: Fail when Nextcloud role is executed on unsupported platform
+  fail:
+      msg: "The Nextcloud role currently supports Debian-family hosts only."
+  when: ansible_facts['os_family'] not in ['Debian']
+
+- name: Install Nextcloud prerequisites (Debian)
+  apt:
+      name:
+          - snapd
+      state: present
+      update_cache: yes
+  become: true
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Ensure snapd service is running
+  service:
+      name: snapd
+      state: started
+      enabled: true
+  become: true
+
+- name: Install Nextcloud snap package
+  command: snap install nextcloud
+  args:
+      creates: /snap/bin/nextcloud
+  become: true
+
+- name: Check if Nextcloud is already configured
+  stat:
+      path: /var/snap/nextcloud/current/nextcloud/config/config.php
+  register: nextcloud_config
+  become: true
+
+- name: Perform initial Nextcloud installation
+  command: "/snap/bin/nextcloud.manual-install {{ NEXTCLOUD_ADMIN_USER }} {{ NEXTCLOUD_ADMIN_PASSWORD }}"
+  become: true
+  when: not nextcloud_config.stat.exists
+
+- name: Configure Nextcloud trusted domains
+  command: "/snap/bin/nextcloud.occ config:system:set trusted_domains {{ loop.index0 }} --value={{ item }}"
+  become: true
+  loop: "{{ NEXTCLOUD_TRUSTED_DOMAINS }}"
+  register: nextcloud_trusted_domains
+  changed_when: "'already' not in nextcloud_trusted_domains.stdout"
+
+- name: Ensure Nextcloud services are running
+  command: snap restart nextcloud.apache
+  become: true
+  register: nextcloud_restart
+  changed_when: false

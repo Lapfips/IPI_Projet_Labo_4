@@ -1,0 +1,4 @@
+NEXTCLOUD_TRUSTED_DOMAINS:
+  - cloud.lab4.local
+  - 192.168.125.4
+NEXTCLOUD_ADMIN_USER: ncadmin

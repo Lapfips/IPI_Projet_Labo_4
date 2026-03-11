@@ -1,0 +1,8 @@
+GLPI_DB_HOST: "{{ groups['database_servers'][0] | default('localhost') }}"
+GLPI_DB_NAME: glpi
+GLPI_DB_USER: glpi
+GLPI_DB_PASSWORD: "{{ vault_glpi_db_password | default('ChangeMeGlpi!42') }}"
+GLPI_WEB_ROOT: /usr/share/glpi
+GLPI_CONFIG_PATH: /etc/glpi
+GLPI_APACHE_SITE: glpi.conf
+GLPI_FQDN: glpi.lab4.local

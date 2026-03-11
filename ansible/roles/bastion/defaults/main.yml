@@ -1,0 +1,60 @@
+BASTION_BASE_PATH: /opt/guacamole
+BASTION_TIMEZONE: "{{ ansible_facts['timezone'] | default('UTC') }}"
+GUACAMOLE_VERSION: "1.5.5"
+
+# Database configuration (uses centralized PostgreSQL server)
+BASTION_DB_HOST: "{{ groups['database_servers'][0] | default('localhost') }}"
+BASTION_DB_PORT: 5432
+BASTION_DB_NAME: guacamole_db
+BASTION_DB_USER: guacamole
+BASTION_DB_PASSWORD: "{{ vault_guacamole_db_password | default('ChangeMeDb!42') }}"
+
+BASTION_PACKAGE_MAP:
+  Debian:
+    - build-essential
+    - libcairo2-dev
+    - libjpeg-turbo8-dev
+    - libpng-dev
+    - libtool-bin
+    - libossp-uuid-dev
+    - libavcodec-extra-dev
+    - libavformat-dev
+    - libavutil-dev
+    - libswscale-dev
+    - libfreerdp-dev
+    - libpango1.0-dev
+    - libssh2-1-dev
+    - libtelnet-dev
+    - libvncserver-dev
+    - libpulse-dev
+    - libssl-dev
+    - libvorbis-dev
+    - libwebp-dev
+    - libwebsockets-dev
+    - tomcat9
+    - tomcat9-admin
+    - postgresql-client
+  RedHat:
+    - gcc
+    - cairo-devel
+    - libjpeg-turbo-devel
+    - libpng-devel
+    - libtool
+    - uuid-devel
+    - ffmpeg-devel
+    - freerdp-devel
+    - pango-devel
+    - libssh2-devel
+    - libtelnet-devel
+    - libvncserver-devel
+    - pulseaudio-libs-devel
+    - openssl-devel
+    - libvorbis-devel
+    - libwebp-devel
+    - libwebsockets-devel
+    - tomcat
+    - postgresql
+
+BASTION_ADMIN_USERNAME: guacadmin
+BASTION_ADMIN_PASSWORD: "{{ vault_guacamole_admin_password | default('ChangeMeAdmin!42') }}"
+BASTION_CONTAINER_PORT: 8080

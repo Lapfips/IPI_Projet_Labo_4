@@ -1,0 +1,11 @@
+- name: Restart Debian DNS server
+  service:
+      name: bind9
+      state: restarted
+  become: true
+
+- name: Restart RedHat DNS server
+  service:
+      name: named
+      state: restarted
+  become: true

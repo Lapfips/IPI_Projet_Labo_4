@@ -1,0 +1,47 @@
+- name: Check if Web UI patch exists
+  command: grep -q 'NoMoreNagging' /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+  register: web_nag_check
+  failed_when: false
+  changed_when: false
+  check_mode: no
+
+- name: Check if Mobile UI patch exists
+  command: grep -q '<!-- MANAGED BLOCK FOR MOBILE NAG -->' /usr/share/pve-yew-mobile-gui/index.html.tpl
+  register: mobile_nag_check
+  failed_when: false
+  changed_when: false
+  check_mode: no
+
+- name: Ensure /usr/local/bin exists
+  file:
+      path: /usr/local/bin
+      state: directory
+      mode: "0755"
+
+- name: Deploy pve-remove-nag.sh
+  copy:
+      src: pve-remove-nag.sh
+      dest: /usr/local/bin/pve-remove-nag.sh
+      mode: "0755"
+  when: web_nag_check.rc != 0 or mobile_nag_check.rc != 0
+
+- name: Create APT post-invoke script
+  copy:
+      dest: /etc/apt/apt.conf.d/99-no-nag-script
+      mode: "0644"
+      content: |
+          DPkg::Post-Invoke { "/usr/local/bin/pve-remove-nag.sh"; };
+  when: web_nag_check.rc != 0 or mobile_nag_check.rc != 0
+
+- name: Reinstall proxmox-widget-toolkit
+  apt:
+      name: proxmox-widget-toolkit
+      state: present
+      force: yes
+      update_cache: yes
+  when: web_nag_check.rc != 0
+
+- name: Execute pve-remove-nag.sh to apply patch immediately
+  command: /usr/local/bin/pve-remove-nag.sh
+  become: true
+  when: web_nag_check.rc != 0 or mobile_nag_check.rc != 0

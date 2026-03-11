@@ -1,0 +1,2 @@
+BASTION_DB_PASSWORD: "{{ vault_guacamole_db_password | default(BASTION_DB_PASSWORD_DEFAULT) }}"
+BASTION_ADMIN_PASSWORD: "{{ vault_guacamole_admin_password | default(BASTION_ADMIN_PASSWORD_DEFAULT) }}"

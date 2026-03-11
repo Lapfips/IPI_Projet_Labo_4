@@ -1,0 +1,14 @@
+# Managed by Ansible - Zabbix server configuration
+LogFile=/var/log/zabbix/zabbix_server.log
+LogFileSize=0
+PidFile=/run/zabbix/zabbix_server.pid
+DBHost={{ ZABBIX_DB_HOST }}
+DBName={{ ZABBIX_DB_NAME }}
+DBUser={{ ZABBIX_DB_USER }}
+DBPassword={{ ZABBIX_DB_PASSWORD }}
+ListenPort={{ ZABBIX_SERVER_LISTEN_PORT }}
+SNMPTrapperFile=/var/log/zabbix/snmptrap.log
+CacheSize=128M
+HistoryCacheSize=128M
+TrendCacheSize=128M
+ValueCacheSize=64M

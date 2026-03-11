@@ -1,0 +1,19 @@
+[Unit]
+Description=Guacamole Remote Desktop Gateway
+Documentation=https://guacamole.apache.org/
+After=network.target postgresql.service
+Wants=guacd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/guacamole -f
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+User=guacamole
+Group=guacamole
+EnvironmentFile=-{{ BASTION_BASE_PATH }}/guacamole.env
+
+[Install]
+WantedBy=multi-user.target

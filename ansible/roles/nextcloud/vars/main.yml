@@ -1,0 +1,1 @@
+NEXTCLOUD_ADMIN_PASSWORD: "{{ vault_nextcloud_admin_password | default(NEXTCLOUD_ADMIN_PASSWORD_DEFAULT) }}"

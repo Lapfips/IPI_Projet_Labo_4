@@ -1,0 +1,22 @@
+- name: Ensure dnf packages are installed (RHEL)
+  dnf:
+      name: "{{ item }}"
+      state: present
+  become: true
+  loop: "{{ DNF_COMMON_PACKAGES }}"
+
+- name: Allow ssh port in firewalld (RHEL)
+  firewalld:
+      port: "{{ SSH_PORT }}/tcp"
+      permanent: true
+      state: enabled
+      immediate: yes
+  become: true
+  notify: Restart firewalld service
+
+- name: Ensure firewalld is enabled and started (RHEL)
+  systemd:
+      name: firewalld
+      enabled: true
+      state: started
+  become: true

@@ -1,0 +1,12 @@
+<?php
+// Managed by Ansible
+
+define('GLPI_CONFIG_DIR', '{{ GLPI_CONFIG_PATH }}');
+
+$DBDEFAULT['type']      = 'pgsql';
+$DBDEFAULT['user']      = '{{ GLPI_DB_USER }}';
+$DBDEFAULT['host']      = '{{ GLPI_DB_HOST }}';
+$DBDEFAULT['port']      = '5432';
+$DBDEFAULT['name']      = '{{ GLPI_DB_NAME }}';
+$DBDEFAULT['password']  = '{{ GLPI_DB_PASSWORD }}';
+$DBDEFAULT['case']      = 'lower';

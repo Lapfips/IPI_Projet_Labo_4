@@ -1,0 +1,21 @@
+- name: Update APT cache
+  apt:
+      update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+      upgrade: dist
+      autoremove: yes
+      autoclean: yes
+
+- name: Install default packages
+  apt:
+      name:
+          - curl
+          - wget
+          - vim
+          - htop
+          - cron
+      state: present
+      autoremove: yes
+      autoclean: yes

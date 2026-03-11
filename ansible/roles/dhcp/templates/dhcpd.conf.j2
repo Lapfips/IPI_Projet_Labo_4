@@ -1,0 +1,21 @@
+# Managed by Ansible - ISC DHCP server configuration
+option domain-name "{{ DHCP_DOMAIN_NAME | default('example.local') }}";
+option domain-name-servers {{ DHCP_DNS_SERVERS | default(['8.8.8.8','1.1.1.1']) | join(', ') }};
+
+default-lease-time {{ DHCP_DEFAULT_LEASE | default(3600) }};
+max-lease-time {{ DHCP_MAX_LEASE | default(86400) }};
+
+authoritative;
+
+subnet {{ DHCP_SUBNET }} netmask {{ DHCP_NETMASK }} {
+  range {{ IP_ADDRESS_RANGE_START }} {{ IP_ADDRESS_RANGE_END }};
+  option routers {{ DHCP_GATEWAY }};
+  option broadcast-address {{ DHCP_BROADCAST }};
+
+{% for host in DHCP_STATIC_RESERVATIONS | default([]) %}
+  host {{ host.name }} {
+    hardware ethernet {{ host.mac }};
+    fixed-address {{ host.ip }};
+  }
+{% endfor %}
+}

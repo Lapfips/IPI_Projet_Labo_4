@@ -1,0 +1,29 @@
+- name: Ensure ISO and template directories exist
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      mode: "0755"
+  loop:
+      - "/var/lib/proxmox-iso"
+      - "/var/lib/proxmox-templates"
+
+- name: Ensure ISO storage exists in Proxmox
+  shell: |
+      if ! pvesm status | awk 'NR>1 {print $1}' | grep -qx "local-iso"; then
+        pvesm add dir local-iso --path /var/lib/proxmox-iso --content iso
+      fi
+  register: _iso_storage
+  changed_when: "'added' in (_iso_storage.stdout + _iso_storage.stderr)"
+  failed_when: _iso_storage.rc not in [0,1]
+  ignore_errors: true
+
+- name: Ensure Template storage exists in Proxmox
+  shell: |
+      if ! pvesm status | awk 'NR>1 {print $1}' | grep -qx "local-templates"; then
+        pvesm add dir local-templates --path /var/lib/proxmox-templates --content vztmpl,snippets
+      fi
+  register: _tmpl_storage
+  changed_when: "'added' in (_tmpl_storage.stdout + _tmpl_storage.stderr)"
+  failed_when: _tmpl_storage.rc not in [0,1]
+  ignore_errors: true

@@ -1,0 +1,28 @@
+- name: Install DHCP server package (RHEL)
+  dnf:
+      name: dhcpd
+      state: present
+  become: true
+
+- name: Check if DHCP configuration file exists (RHEL)
+  stat:
+      path: /etc/dhcp/dhcpd.conf
+  register: dhcpd_conf
+  become: true
+
+- name: Deploy DHCP server configuration file (RHEL)
+  template:
+      src: dhcpd.conf.j2
+      dest: /etc/dhcp/dhcpd.conf
+      owner: root
+      group: root
+      mode: "0644"
+  notify: Restart RedHat DHCP service
+  become: true
+
+- name: Ensure DHCP service is enabled and started (RHEL)
+  systemd:
+      name: dhcpd
+      enabled: true
+      state: started
+  become: true

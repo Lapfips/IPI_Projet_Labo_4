@@ -1,0 +1,12 @@
+NEXTCLOUD_ADMIN_USER: ncadmin
+NEXTCLOUD_ADMIN_PASSWORD: "{{ vault_nextcloud_admin_password | default('ChangeMeNc!42') }}"
+NEXTCLOUD_TRUSTED_DOMAINS:
+    - nextcloud.lab4.local
+NEXTCLOUD_HTTP_PORT: 80
+
+# Database configuration (uses centralized PostgreSQL server)
+NEXTCLOUD_DB_HOST: "{{ groups['database_servers'][0] | default('localhost') }}"
+NEXTCLOUD_DB_PORT: 5432
+NEXTCLOUD_DB_NAME: nextcloud
+NEXTCLOUD_DB_USER: nextcloud
+NEXTCLOUD_DB_PASSWORD: "{{ vault_nextcloud_db_password | default('ChangeMeNcDb!42') }}"

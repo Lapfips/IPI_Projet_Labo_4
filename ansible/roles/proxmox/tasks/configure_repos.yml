@@ -1,0 +1,49 @@
+- name: Remove Proxmox Enterprise APT repo file
+  file:
+      path: /etc/apt/sources.list.d/pve-enterprise.list
+      state: absent
+
+- name: Remove other enterprise source files
+  find:
+      paths: /etc/apt/sources.list.d/
+      patterns: "*enterprise*"
+  register: enterprise_sources
+
+- name: Delete found enterprise source files
+  file:
+      path: "{{ item.path }}"
+      state: absent
+  loop: "{{ enterprise_sources.files }}"
+
+- name: Remove enterprise entries from /etc/apt/sources.list
+  lineinfile:
+      path: /etc/apt/sources.list
+      regexp: '.*enterprise\.proxmox\.com.*'
+      state: absent
+
+- name: Remove ceph enterprise entries from ceph.sources if exists
+  lineinfile:
+      path: /etc/apt/sources.list.d/ceph.sources
+      regexp: '.*enterprise\.proxmox\.com.*'
+      state: absent
+  ignore_errors: true
+
+- name: Add Proxmox no-subscription repository
+  copy:
+      dest: /etc/apt/sources.list.d/pve-no-subscription.list
+      content: "deb http://download.proxmox.com/debian/pve {{ ansible_distribution_release }} pve-no-subscription\n"
+      owner: root
+      group: root
+      mode: "0644"
+
+- name: Add Ceph no-subscription repository
+  copy:
+      dest: /etc/apt/sources.list.d/ceph.sources
+      content: |
+          Types: deb
+          URIs: http://download.proxmox.com/debian/ceph-squid
+          Suites: {{ ansible_distribution_release }}
+          Components: no-subscription
+      owner: root
+      group: root
+      mode: "0644"

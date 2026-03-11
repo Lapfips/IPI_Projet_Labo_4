@@ -1,0 +1,49 @@
+node: "{{ ansible_hostname }}"
+
+# Storages
+iso_storage_name: local-iso
+iso_storage_path: /var/lib/proxmox-iso
+tmpl_storage_name: local-templates
+tmpl_storage_path: /var/lib/proxmox-templates
+
+# API account defaults
+api_user: terraform
+api_group: terraform
+api_role: terraform-role
+api_realm: pve
+api_token_name: terraform-token
+api_perm_path: /
+api_role_privs: >
+    Datastore.AllocateSpace,Datastore.Audit,Pool.Allocate,Sys.Audit,
+    Sys.Console,Sys.Modify,Sys.PowerMgmt,VM.Allocate,VM.Audit,VM.Clone,
+    VM.Config.CDROM,VM.Config.CPU,VM.Config.Disk,VM.Config.Memory,
+    VM.Config.Network,VM.Config.Options,VM.Migrate,VM.PowerMgmt
+
+# API token output files
+token_output_file: terraform/api_token.txt
+terraform_auto_tfvars: "{{ playbook_dir }}/../terraform/proxmox.auto.tfvars"
+
+# Cloud-init defaults
+cloud_init_user: ansible
+cloud_init_password: ansible1234
+
+# VM Templates to download
+proxmox_vm_templates:
+    # - url: "https://cloud.debian.org/images/cloud/bullseye/latest/debian-12-genericcloud-amd64-20231010-1234.img"
+    #   filename: "debian-12-genericcloud-amd64-20231010-1234.img"
+    #   name: "debian-12-template"
+    #   vm_id: 9000
+    #   memory: 2048
+    #   net0: "virtio,bridge=vmbr0"
+    #   disk_size: "32G"
+    #   cores: 2
+    #   ipconfig0: "ip=dhcp"
+    - url: "https://cloud-images.ubuntu.com/daily/server/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
+      filename: "ubuntu-24.04-server-cloudimg-amd64.img"
+      name: "ubuntu-24.04-template"
+      vm_id: 9001
+      memory: 2048
+      net0: "virtio,bridge=vmbr0"
+      disk_size: "32G"
+      cores: 2
+      ipconfig0: "ip=dhcp"

@@ -1,0 +1,95 @@
+- name: Update package cache
+  package:
+      update_cache: yes
+  become: true
+
+- name: Upgrade all packages to the latest version
+  package:
+      name: "*"
+      state: present
+      update_cache: yes
+  become: true
+
+- name: Ensure common packages are installed
+  package:
+      name: "{{ item }}"
+      state: present
+  become: true
+  loop: "{{ COMMON_PACKAGES }}"
+
+- name: Check if admin user exists
+  getent:
+      database: passwd
+      key: "{{ ADMIN_USER }}"
+  register: admin_user_check
+  ignore_errors: true
+
+- name: Create admin user if it does not exist
+  user:
+      name: "{{ ADMIN_USER }}"
+      password: "{{ ADMIN_PASSWORD_HASHED }}"
+      state: present
+      create_home: yes
+  become: true
+  when: admin_user_check.failed
+
+- name: Ensure admin user password is up to date
+  user:
+      name: "{{ ADMIN_USER }}"
+      password: "{{ ADMIN_PASSWORD_HASHED }}"
+  become: true
+  when: not admin_user_check.failed
+
+- name: Ensure admin user authorized keys are configured
+  authorized_key:
+      user: "{{ ADMIN_USER }}"
+      key: "{{ item }}"
+      state: present
+  become: true
+  loop: "{{ ADMIN_AUTHORIZED_KEYS | default([]) }}"
+  when: ADMIN_AUTHORIZED_KEYS | length > 0
+
+- name: Ensure sudoers.d entry for admin user
+  copy:
+      dest: "/etc/sudoers.d/{{ ADMIN_USER }}"
+      content: "{{ ADMIN_USER }} ALL=(ALL) NOPASSWD: ALL\n"
+      owner: root
+      group: root
+      mode: "0440"
+      validate: "visudo -cf %s"
+  become: true
+
+- name: Apply RedHat configurations
+  when: ansible_os_family == "RedHat"
+  import_tasks: RedHat.yml
+
+- name: Apply Debian configurations
+  when: ansible_os_family == "Debian"
+  import_tasks: Debian.yml
+
+- name: Deploy Zabbix agent PSK file when provided
+  copy:
+      dest: /etc/zabbix/zabbix_agentd.psk
+      content: "{{ ZABBIX_PSK_KEY }}\n"
+      owner: zabbix
+      group: zabbix
+      mode: "0400"
+  become: true
+  when: ZABBIX_PSK_KEY | length > 0
+
+- name: Configure Zabbix agent
+  template:
+      src: zabbix-agent.conf.j2
+      dest: /etc/zabbix/zabbix_agentd.conf
+      owner: root
+      group: root
+      mode: "0644"
+  become: true
+  notify: Restart zabbix-agent service
+
+- name: Ensure Zabbix agent service is enabled and running
+  service:
+      name: zabbix-agent
+      enabled: true
+      state: started
+  become: true

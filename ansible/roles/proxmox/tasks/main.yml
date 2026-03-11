@@ -1,0 +1,24 @@
+---
+- name: Configure Repos
+  tags: repos
+  include_tasks: configure_repos.yml
+
+- name: System Update
+  tags: update
+  include_tasks: system_update.yml
+
+- name: Storage Setup
+  tags: storage
+  include_tasks: storage_setup.yml
+
+- name: Templates Setup
+  tags: templates
+  include_tasks: templates_setup.yml
+
+- name: Hide Subscription Nag
+  tags: nag
+  include_tasks: hide_subscription_nag.yml
+
+- name: Proxmox API Setup
+  tags: api
+  include_tasks: proxmox_api_setup.yml

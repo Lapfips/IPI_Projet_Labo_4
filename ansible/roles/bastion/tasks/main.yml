@@ -1,0 +1,114 @@
+- name: Set bastion package list
+  set_fact:
+      bastion_packages: "{{ BASTION_PACKAGE_MAP.get(ansible_facts['os_family']) | default([]) }}"
+
+- name: Fail when bastion role does not support this OS family
+  fail:
+      msg: "The bastion role does not support the {{ ansible_facts['os_family'] }} family yet."
+  when: bastion_packages | length == 0
+
+- name: Ensure bastion packages are installed
+  package:
+      name: "{{ bastion_packages }}"
+      state: present
+  become: true
+
+- name: Create bastion directories
+  file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+  loop:
+      - "{{ BASTION_BASE_PATH }}"
+      - "{{ BASTION_BASE_PATH }}/data"
+      - "{{ BASTION_BASE_PATH }}/data/guacamole"
+      - "{{ BASTION_BASE_PATH }}/extensions"
+
+- name: Download Guacamole server source
+  get_url:
+      url: "https://downloads.apache.org/guacamole/{{ GUACAMOLE_VERSION }}/source/guacamole-server-{{ GUACAMOLE_VERSION }}.tar.gz"
+      dest: "/tmp/guacamole-server-{{ GUACAMOLE_VERSION }}.tar.gz"
+  register: guacamole_download
+  changed_when: false
+
+- name: Extract Guacamole server
+  unarchive:
+      src: "/tmp/guacamole-server-{{ GUACAMOLE_VERSION }}.tar.gz"
+      dest: /tmp
+      remote_src: yes
+      creates: "/tmp/guacamole-server-{{ GUACAMOLE_VERSION }}/configure"
+  become: true
+
+- name: Build and install Guacamole server (guacd)
+  shell: |
+      cd /tmp/guacamole-server-{{ GUACAMOLE_VERSION }}
+      ./configure --prefix=/usr/local
+      make
+      make install
+      ldconfig
+  become: true
+  args:
+      creates: /usr/local/sbin/guacd
+
+- name: Download Guacamole client WAR file
+  get_url:
+      url: "https://downloads.apache.org/guacamole/{{ GUACAMOLE_VERSION }}/binary/guacamole-{{ GUACAMOLE_VERSION }}.war"
+      dest: "/var/lib/tomcat9/webapps/guacamole.war"
+      owner: tomcat
+      group: tomcat
+      mode: "0644"
+  become: true
+  notify: Restart tomcat
+
+- name: Create Guacamole configuration directory
+  file:
+      path: /etc/guacamole
+      state: directory
+      owner: tomcat
+      group: tomcat
+      mode: "0755"
+  become: true
+
+- name: Deploy Guacamole properties configuration
+  template:
+      src: guacamole.properties.j2
+      dest: /etc/guacamole/guacamole.properties
+      owner: tomcat
+      group: tomcat
+      mode: "0640"
+  become: true
+  notify: Restart tomcat
+
+- name: Create guacd systemd service
+  template:
+      src: guacd.service.j2
+      dest: /etc/systemd/system/guacd.service
+      mode: "0644"
+  become: true
+  notify: Reload systemd daemon
+
+- name: Enable and start guacd service
+  systemd:
+      name: guacd
+      enabled: true
+      state: started
+      daemon_reload: true
+  become: true
+
+- name: Ensure Tomcat is enabled and started
+  systemd:
+      name: tomcat9
+      enabled: true
+      state: started
+  become: true
+
+- name: Wait for Guacamole service to be reachable
+  wait_for:
+      host: 127.0.0.1
+      port: "{{ BASTION_CONTAINER_PORT }}"
+      delay: 5
+      timeout: 60
+  become: false

@@ -1,0 +1,18 @@
+// Managed by Ansible - BIND options
+options {
+    directory "/var/cache/bind";
+
+    recursion yes;
+    allow-query { any; };
+
+    dnssec-validation auto;
+
+    forwarders {
+{% for forwarder in DNS_FORWARDERS | default([]) %}
+        {{ forwarder }};
+{% endfor %}
+    };
+
+    listen-on port 53 { any; };
+    listen-on-v6 { any; };
+};

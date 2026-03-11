@@ -1,0 +1,30 @@
+all:
+  children:
+    proxmox:
+      hosts:
+        10.29.10.41:
+          ansible_user: root
+          ansible_password: "{{ vault_ssh_password }}"
+          ansible_become_method: sudo
+          ansible_become_user: root
+          ansible_become_pass: "{{ vault_become_password }}"
+          ansible_host_key_checking: False
+          ansible_port: 22
+    bastion_servers:
+      hosts:
+        192.168.125.1:
+    ticketing_servers:
+      hosts:
+        192.168.125.2:
+    network_servers:
+      hosts:
+        192.168.125.3:
+    cloud_servers:
+      hosts:
+        192.168.125.4:
+    monitoring_servers:
+      hosts:
+        192.168.125.5:
+    database_servers:
+      hosts:
+        192.168.150.1:

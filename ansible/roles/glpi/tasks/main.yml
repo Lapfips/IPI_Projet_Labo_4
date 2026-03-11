@@ -1,0 +1,76 @@
+- name: Fail when GLPI role is executed on unsupported platform
+  fail:
+      msg: "The GLPI role currently supports Debian-family hosts only."
+  when: ansible_facts['os_family'] not in ['Debian']
+
+- name: Install GLPI packages (Debian)
+  apt:
+      name:
+          - glpi
+          - glpi-agent
+          - apache2
+          - php-pgsql
+          - php-apcu
+          - php-curl
+          - php-ldap
+          - php-gd
+      state: present
+      update_cache: yes
+  become: true
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Enable Apache modules for GLPI
+  command: a2enmod rewrite proxy proxy_http
+  become: true
+  register: glpi_enable_modules
+  changed_when: glpi_enable_modules.rc == 0 and 'already enabled' not in glpi_enable_modules.stdout
+
+- name: Ensure GLPI configuration directory exists
+  file:
+      path: "{{ GLPI_CONFIG_PATH }}"
+      state: directory
+      owner: root
+      group: www-data
+      mode: "0750"
+  become: true
+
+- name: Deploy GLPI database configuration
+  template:
+      src: local_define.php.j2
+      dest: "{{ GLPI_CONFIG_PATH }}/local_define.php"
+      owner: root
+      group: www-data
+      mode: "0640"
+  become: true
+  notify: Restart apache service
+
+- name: Deploy GLPI Apache virtual host
+  template:
+      src: apache-glpi.conf.j2
+      dest: "/etc/apache2/sites-available/{{ GLPI_APACHE_SITE }}"
+      owner: root
+      group: root
+      mode: "0644"
+  become: true
+  notify: Restart apache service
+
+- name: Enable GLPI site
+  command: "a2ensite {{ GLPI_APACHE_SITE }}"
+  become: true
+  register: glpi_enable_site
+  changed_when: glpi_enable_site.rc == 0 and 'already enabled' not in glpi_enable_site.stdout
+  notify: Restart apache service
+
+- name: Disable default Apache site
+  command: a2dissite 000-default.conf
+  become: true
+  register: glpi_disable_default
+  changed_when: glpi_disable_default.rc == 0 and 'Site 000-default already disabled' not in glpi_disable_default.stdout
+  notify: Restart apache service
+
+- name: Ensure Apache service is running
+  service:
+      name: apache2
+      state: started
+      enabled: true
+  become: true

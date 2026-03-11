@@ -1,0 +1,17 @@
+- name: Restart ufw service
+  service:
+      name: ufw
+      state: restarted
+  become: true
+
+- name: Restart firewalld service
+  service:
+      name: firewalld
+      state: restarted
+  become: true
+
+- name: Restart zabbix-agent service
+  service:
+      name: zabbix-agent
+      state: restarted
+  become: true

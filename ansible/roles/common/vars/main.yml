@@ -1,0 +1,8 @@
+ADMIN_PASSWORD_EFFECTIVE: >-
+    {{
+      (vault_admin_password | default(ADMIN_PASSWORD_DEFAULT))
+      if vault_admin_password is defined
+      else ADMIN_PASSWORD_DEFAULT
+    }}
+
+ADMIN_PASSWORD_HASHED: "{{ ADMIN_PASSWORD_EFFECTIVE | password_hash('sha512') }}"

@@ -1,0 +1,1 @@
+GLPI_DB_PASSWORD: "{{ vault_glpi_db_password | default(GLPI_DB_PASSWORD_DEFAULT) }}"

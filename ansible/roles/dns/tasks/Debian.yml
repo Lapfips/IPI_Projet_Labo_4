@@ -1,0 +1,31 @@
+- name: Install DNS server packages (Debian/Ubuntu)
+  apt:
+      name:
+          - bind9
+          - bind9utils
+          - bind9-doc
+      state: present
+  become: true
+
+- name: Check if DNS configuration file exists (Debian/Ubuntu)
+  stat:
+      path: /etc/bind/named.conf.options
+  register: named_conf_options
+  become: true
+
+- name: Configure DNS server (Debian/Ubuntu)
+  template:
+      src: named.conf.options.j2
+      dest: /etc/bind/named.conf.options
+      owner: root
+      group: bind
+      mode: "0644"
+  notify: Restart Debian DNS server
+  become: true
+
+- name: Ensure DNS server is started and enabled (Debian/Ubuntu)
+  service:
+      name: bind9
+      state: started
+      enabled: true
+  become: true

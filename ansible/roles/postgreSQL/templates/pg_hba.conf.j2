@@ -1,0 +1,6 @@
+# Managed by Ansible - pg_hba.conf
+local   all             postgres                                peer
+local   all             all                                     peer
+{% for rule in POSTGRES_HBA_RULES %}
+{{ '%-7s'|format(rule.type) }} {{ '%-15s'|format(rule.database) }} {{ '%-15s'|format(rule.user) }} {{ '%-23s'|format(rule.address) }} {{ rule.method }}
+{% endfor %}

@@ -1,0 +1,19 @@
+- name: Ensure apt packages are installed (Debian/Ubuntu)
+  apt:
+      name: "{{ item }}"
+      state: present
+  become: true
+  loop: "{{ APT_COMMON_PACKAGES }}"
+
+- name: Allow ssh port in ufw firewall (Debian/Ubuntu)
+  ufw:
+      rule: allow
+      port: "{{ SSH_PORT }}"
+      proto: tcp
+  become: true
+  notify: Restart ufw service
+
+- name: Enable ufw firewall (Debian/Ubuntu)
+  ufw:
+      state: enabled
+  become: true

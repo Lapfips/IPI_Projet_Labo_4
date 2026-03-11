@@ -1,0 +1,17 @@
+[Unit]
+Description=Guacamole proxy daemon (guacd)
+Documentation=https://guacamole.apache.org/
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/guacd -f
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+User=daemon
+Group=daemon
+
+[Install]
+WantedBy=multi-user.target

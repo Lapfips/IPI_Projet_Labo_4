@@ -1,0 +1,30 @@
+- name: Install DNS server packages (RHEL)
+  dnf:
+      name:
+          - bind
+          - bind-utils
+      state: present
+  become: true
+
+- name: Check if DNS Configuration file exists (RHEL)
+  stat:
+      path: /etc/named.conf.options
+  register: named_conf_options
+  become: true
+
+- name: Configure DNS server (RHEL)
+  template:
+      src: named.conf.options.j2
+      dest: /etc/named.conf.options
+      owner: root
+      group: named
+      mode: "0644"
+  notify: Restart RedHat DNS server
+  become: true
+
+- name: Ensure DNS server is started and enabled (RHEL)
+  service:
+      name: named
+      state: started
+      enabled: true
+  become: true

@@ -1,0 +1,138 @@
+- name: Ensure template cache directory exists
+  ansible.builtin.file:
+      path: /var/lib/vz/template/cache
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+  tags: templates
+
+- name: Download VM templates to cache
+  ansible.builtin.get_url:
+      url: "{{ item.url }}"
+      dest: "/var/lib/vz/template/cache/{{ item.filename }}"
+      owner: root
+      group: root
+      mode: "0644"
+  become: true
+  loop: "{{ proxmox_vm_templates }}"
+  when: proxmox_vm_templates is defined
+  tags: templates
+
+- name: Verify downloaded VM templates
+  ansible.builtin.stat:
+      path: "/var/lib/vz/template/cache/{{ item.filename }}"
+  loop: "{{ proxmox_vm_templates }}"
+  when: proxmox_vm_templates is defined
+  register: template_files
+  tags: templates
+
+- name: Get list of existing VMs
+  community.general.proxmox_vm_info:
+      api_host: localhost
+      api_user: "{{ api_user }}@{{ api_realm }}"
+      api_token_id: "{{ api_token_name }}"
+      api_token_secret: "{{ api_token_secret }}"
+      node: "{{ node }}"
+      type: qemu
+  register: existing_vms
+  when: api_token_secret is defined
+  tags: templates
+
+- name: Remove existing template VMs if they exist
+  community.general.proxmox_kvm:
+      api_host: localhost
+      api_user: "{{ api_user }}@{{ api_realm }}"
+      api_token_id: "{{ api_token_name }}"
+      api_token_secret: "{{ api_token_secret }}"
+      node: "{{ node }}"
+      vmid: "{{ item.vm_id }}"
+      state: absent
+      force: true
+  loop: "{{ proxmox_vm_templates }}"
+  when:
+      - proxmox_vm_templates is defined
+      - api_token_secret is defined
+      - existing_vms.proxmox_vms | selectattr('vmid', 'equalto', item.vm_id | int) | list | length > 0
+  tags: templates
+
+- name: Create VM from cloud image for template
+  community.general.proxmox_kvm:
+      api_host: localhost
+      api_user: "{{ api_user }}@{{ api_realm }}"
+      api_token_id: "{{ api_token_name }}"
+      api_token_secret: "{{ api_token_secret }}"
+      node: "{{ node }}"
+      vmid: "{{ item.vm_id }}"
+      name: "{{ item.name }}"
+      memory: "{{ item.memory }}"
+      cores: "{{ item.cores }}"
+      scsihw: virtio-scsi-pci
+      net:
+          net0: "{{ item.net0 }}"
+      ide:
+          ide2: "{{ tmpl_storage_name }}:cloudinit"
+      ciuser: "{{ cloud_init_user }}"
+      cipassword: "{{ cloud_init_password }}"
+      ipconfig:
+          ipconfig0: "ip={{ item.ipconfig0 | default('dhcp') }}"
+      bootdisk: scsi0
+      boot: c
+      state: present
+  loop: "{{ proxmox_vm_templates }}"
+  when:
+      - proxmox_vm_templates is defined
+      - api_token_secret is defined
+  register: vm_created
+  tags: templates
+
+- name: Import disk image to VM storage
+  ansible.builtin.command:
+      argv:
+          - qm
+          - importdisk
+          - "{{ item.vm_id }}"
+          - /var/lib/vz/template/cache/{{ item.filename }}
+          - "{{ tmpl_storage_name }}"
+  become: true
+  loop: "{{ proxmox_vm_templates }}"
+  when:
+      - proxmox_vm_templates is defined
+      - vm_created.changed
+  register: disk_import
+  tags: templates
+
+- name: Attach imported disk to VM
+  community.general.proxmox_kvm:
+      api_host: localhost
+      api_user: "{{ api_user }}@{{ api_realm }}"
+      api_token_id: "{{ api_token_name }}"
+      api_token_secret: "{{ api_token_secret }}"
+      node: "{{ node }}"
+      vmid: "{{ item.vm_id }}"
+      scsi:
+          scsi0: "{{ tmpl_storage_name }}:vm-{{ item.vm_id }}-disk-0"
+      update: true
+  loop: "{{ proxmox_vm_templates }}"
+  when:
+      - proxmox_vm_templates is defined
+      - api_token_secret is defined
+      - disk_import.changed
+  tags: templates
+
+- name: Convert VM to template
+  community.general.proxmox_kvm:
+      api_host: localhost
+      api_user: "{{ api_user }}@{{ api_realm }}"
+      api_token_id: "{{ api_token_name }}"
+      api_token_secret: "{{ api_token_secret }}"
+      node: "{{ node }}"
+      vmid: "{{ item.vm_id }}"
+      template: true
+      update: true
+  loop: "{{ proxmox_vm_templates }}"
+  when:
+      - proxmox_vm_templates is defined
+      - api_token_secret is defined
+  tags: templates

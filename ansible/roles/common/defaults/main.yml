@@ -1,0 +1,26 @@
+ADMIN_USER: ansible-admin
+ADMIN_PASSWORD_DEFAULT: "ChangeMe!42"
+ADMIN_AUTHORIZED_KEYS: []
+SSH_PORT: 22
+
+COMMON_PACKAGES:
+    - vim
+    - git
+    - curl
+    - wget
+    - tree
+    - htop
+    - nano
+    - sudo
+    - zabbix-agent
+
+APT_COMMON_PACKAGES:
+    - ufw
+
+DNF_COMMON_PACKAGES:
+    - firewalld
+
+ZABBIX_SERVER_HOST: 127.0.0.1
+ZABBIX_SERVER_PORT: 10051
+ZABBIX_PSK_IDENTITY: "{{ inventory_hostname }}"
+ZABBIX_PSK_KEY: ""

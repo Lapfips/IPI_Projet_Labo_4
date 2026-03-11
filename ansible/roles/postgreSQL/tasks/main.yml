@@ -1,0 +1,84 @@
+- name: Fail when PostgreSQL role is executed on unsupported platform
+  fail:
+      msg: "The PostgreSQL role currently supports Debian-family hosts only."
+  when: ansible_facts['os_family'] not in ['Debian']
+
+- name: Install PostgreSQL packages (Debian)
+  apt:
+      name:
+          - postgresql
+          - postgresql-contrib
+          - python3-psycopg2
+      state: present
+      update_cache: yes
+  become: true
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Discover PostgreSQL configuration directory
+  command: "bash -lc 'ls -d /etc/postgresql/*/main'"
+  register: postgres_conf_dir_command
+  changed_when: false
+  become: true
+  failed_when: false
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Set PostgreSQL configuration directory fact
+  set_fact:
+      postgres_conf_dir: "{{ (postgres_conf_dir_command.stdout_lines | default([])) | first | default(POSTGRES_CONF_DIR) }}"
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: Use default PostgreSQL configuration directory when discovery skipped
+  set_fact:
+      postgres_conf_dir: "{{ POSTGRES_CONF_DIR }}"
+  when: ansible_facts['os_family'] != 'Debian' and postgres_conf_dir is not defined
+
+- name: Ensure PostgreSQL service is enabled and started
+  service:
+      name: "{{ POSTGRES_SERVICE_NAME }}"
+      state: started
+      enabled: true
+  become: true
+
+- name: Configure postgresql.conf
+  template:
+      src: postgresql.conf.j2
+      dest: "{{ postgres_conf_dir | default(POSTGRES_CONF_DIR) }}/postgresql.conf"
+      owner: postgres
+      group: postgres
+      mode: "0644"
+  become: true
+  notify: Restart PostgreSQL service
+
+- name: Configure pg_hba.conf
+  template:
+      src: pg_hba.conf.j2
+      dest: "{{ postgres_conf_dir | default(POSTGRES_CONF_DIR) }}/pg_hba.conf"
+      owner: postgres
+      group: postgres
+      mode: "0640"
+  become: true
+  notify: Restart PostgreSQL service
+
+- name: Ensure PostgreSQL users exist
+  shell: |
+      set -o pipefail
+      sudo -u postgres psql -c "SELECT 1 FROM pg_roles WHERE rolname='{{ item.name }}';" | grep -q 1 || \
+      sudo -u postgres psql -c "CREATE USER {{ item.name }} WITH PASSWORD '{{ item.password }}';"
+  args:
+      executable: /bin/bash
+  become: true
+  loop: "{{ POSTGRES_USERS }}"
+  register: create_users
+  changed_when: "'CREATE ROLE' in create_users.stdout"
+
+- name: Ensure PostgreSQL databases exist
+  shell: |
+      set -o pipefail
+      sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw {{ item.name }} || \
+      sudo -u postgres psql -c "CREATE DATABASE {{ item.name }} OWNER {{ item.owner }} ENCODING 'UTF8';"
+  args:
+      executable: /bin/bash
+  become: true
+  loop: "{{ POSTGRES_DATABASES }}"
+  register: create_dbs
+  changed_when: "'CREATE DATABASE' in create_dbs.stdout"

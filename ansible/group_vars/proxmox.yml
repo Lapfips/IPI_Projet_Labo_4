@@ -1,0 +1,10 @@
+api_user: terraform
+api_group: terraform
+api_role: terraform-role
+api_token_name: terraform-token
+api_perm_path: /
+api_role_privs: >-
+  Datastore.AllocateSpace,Datastore.Audit,Pool.Allocate,Sys.Audit,
+  Sys.Console,Sys.Modify,Sys.PowerMgmt,VM.Allocate,VM.Audit,VM.Clone,
+  VM.Config.CDROM,VM.Config.CPU,VM.Config.Disk,VM.Config.Memory,
+  VM.Config.Network,VM.Config.Options,VM.Migrate,VM.PowerMgmt

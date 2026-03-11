@@ -1,0 +1,32 @@
+POSTGRES_VERSION: 15
+POSTGRES_CONF_DIR: "/etc/postgresql/{{ POSTGRES_VERSION }}/main"
+POSTGRES_SERVICE_NAME: postgresql
+POSTGRES_UNIX_SOCKET: /var/run/postgresql
+POSTGRES_LISTEN_ADDRESSES: "*"
+POSTGRES_PORT: 5432
+POSTGRES_HBA_RULES:
+    - type: host
+      database: all
+      user: all
+      address: 0.0.0.0/0
+      method: md5
+
+POSTGRES_USERS:
+    - name: guacamole
+      password: "{{ vault_guacamole_db_password | default('ChangeMeDb!42') }}"
+    - name: glpi
+      password: "{{ vault_glpi_db_password | default('ChangeMeGlpi!42') }}"
+    - name: nextcloud
+      password: "{{ vault_nextcloud_db_password | default('ChangeMeNcDb!42') }}"
+    - name: zabbix
+      password: "{{ vault_zabbix_db_password | default('ChangeMeZabbix!42') }}"
+
+POSTGRES_DATABASES:
+    - name: guacamole_db
+      owner: guacamole
+    - name: glpi
+      owner: glpi
+    - name: nextcloud
+      owner: nextcloud
+    - name: zabbix
+      owner: zabbix

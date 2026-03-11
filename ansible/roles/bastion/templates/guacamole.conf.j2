@@ -1,0 +1,54 @@
+# Deprecated Docker Compose template retained for reference.
+# The bastion role now uses Podman containers and systemd units.
+
+version: '3.9'
+
+services:
+  postgres:
+    image: {{ BASTION_IMAGES.postgres }}
+    container_name: guacamole_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: {{ BASTION_DB_NAME }}
+      POSTGRES_USER: {{ BASTION_DB_USER }}
+      POSTGRES_PASSWORD: {{ BASTION_DB_PASSWORD }}
+    volumes:
+      - {{ BASTION_BASE_PATH }}/data/db:/var/lib/postgresql/data
+    networks:
+      - {{ BASTION_NETWORK_NAME }}
+
+  guacd:
+    image: {{ BASTION_IMAGES.guacd }}
+    container_name: guacamole_guacd
+    restart: unless-stopped
+    networks:
+      - {{ BASTION_NETWORK_NAME }}
+
+  guacamole:
+    image: {{ BASTION_IMAGES.guacamole }}
+    container_name: guacamole
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - guacd
+    environment:
+      GUACAMOLE_HOME: /config
+      POSTGRES_HOSTNAME: postgres
+      POSTGRES_DATABASE: {{ BASTION_DB_NAME }}
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: {{ BASTION_DB_USER }}
+      POSTGRES_PASSWORD: {{ BASTION_DB_PASSWORD }}
+      GUACD_HOSTNAME: guacd
+      GUACD_PORT: 4822
+      TZ: {{ BASTION_TIMEZONE }}
+    volumes:
+      - {{ BASTION_BASE_PATH }}/data/guacamole:/config
+      - {{ BASTION_BASE_PATH }}/extensions:/opt/guacamole/extensions
+    ports:
+      - "{{ BASTION_CONTAINER_PORT }}:8080"
+    networks:
+      - {{ BASTION_NETWORK_NAME }}
+
+networks:
+  {{ BASTION_NETWORK_NAME }}:
+    driver: bridge
