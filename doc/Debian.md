@@ -30,6 +30,12 @@ Avant de commencer vérifier que toutes ces étapes soit fonctionnelles :
 
 ## **Installation**
 
+Il existe 3 versions de l'ISO :
+
+- **boot** : fait une installation minimale et télécharge les paquets sur internet
+- **minimal** : installation fonctionnelle en l'état, avec juste les paquets nécessaires minimum inclus pour une installation hors ligne
+- **dvd** : installation complète, hors ligne mais avec une ISO plus lourde
+
 ### **Téléchargement ISO**
 
 Télécharger l'image ISO officielle depuis : https://www.debian.org
