@@ -41,7 +41,3 @@ scripts/*.tmp
 
 # Documentation générée
 docs/_build/
-
-# Schémas générés
-schemas/*.png
-schemas/*.svg
