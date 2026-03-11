@@ -11,7 +11,6 @@ En outre, avoir un système compatible à la fois sur des distributions **Debian
 
 ## **Ressources nécessaires**
 
-
 **System requirements** :
 
     **Disk space** : `10GB` minimum, `20GB` recommandé
@@ -21,9 +20,9 @@ En outre, avoir un système compatible à la fois sur des distributions **Debian
 
 Il existe 3 versions de l'ISO :
 
-* **boot** : fait une installation minimale et télécharge les paquets sur internet
-* **minimal** : installation fonctionnelle en l'état, avec juste les paquets nécessaires minimum inclus pour une installation hors ligne
-* **dvd** : installation complète, hors ligne mais avec une ISO plus lourde
+- **boot** : fait une installation minimale et télécharge les paquets sur internet
+- **minimal** : installation fonctionnelle en l'état, avec juste les paquets nécessaires minimum inclus pour une installation hors ligne
+- **dvd** : installation complète, hors ligne mais avec une ISO plus lourde
 
 L'ISO **minimal** est un bon choix, il faudra de toute façon configurer les miroirs.
 
