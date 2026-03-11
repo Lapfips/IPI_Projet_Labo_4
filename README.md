@@ -63,9 +63,8 @@ Les schémas sont accessible en SVG ici :
 - Docs
   - Apache
   - Confluence
-  - DHCP
-  - DNS
-  - GLPI
+  - Dns
+  - Glpi
   - Guacamole
   - Jira
   - pfSense
