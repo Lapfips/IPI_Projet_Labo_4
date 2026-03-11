@@ -41,3 +41,11 @@ Créer l'utilisateur:
 
 Accorder les droits sur la database:
 
+`GRANT ALL PRIVILEGES ON mydb TO name`
+
+Ici tous les privilèges sont accordés à l'utilisateur, mais pour des raisons de sécurité une customisation plus fine des privilèges est nécessaire
+
+L'authentification par l'utilisateur peut nécessiter la modification du fichier "pg_hba.conf" qui se trouve dans le dossier data du dossier initialisé lors de l'installation de postgres.
+
+ 
+ 
