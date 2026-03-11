@@ -1,0 +1,50 @@
+# terraform.tfvars.example
+# Copy this file to terraform.tfvars and customize as needed
+#
+# NOTE: Proxmox API credentials are auto-generated in proxmox.auto.tfvars
+#       by running: ansible-playbook ansible/proxmox-playbook.yml
+#
+# The proxmox.auto.tfvars file contains:
+# - pm_api_url
+# - pm_tls_insecure
+# - pm_api_token_id
+# - pm_api_token_secret
+# - default_target_node
+
+# VM Storage Configuration
+vm_storage               = "local-lvm"
+cloudinit_cdrom_storage  = "local"
+vm_bridge                = "vmbr0"
+proxmox_pool             = "lab4"
+default_tags             = ["lab4", "ansible"]
+
+# Cloud-init Configuration
+cloud_init_user           = "ansible"
+cloud_init_password       = ""
+cloud_init_ssh_public_keys = [
+	"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMUST_REPLACE_ME_WITH_REAL_KEY lab4@local"
+]
+cloud_init_dns_servers    = ["192.168.125.3", "1.1.1.1"]
+cloud_init_search_domain  = "lab4.local"
+
+# VM Template (created by proxmox-playbook.yml)
+base_vm_template = "ubuntu-24.04-template"
+
+# Ansible Integration (optional)
+run_ansible_after_apply = false
+ansible_playbook_path = "../ansible/main-playbook.yml"
+ansible_inventory_path = "../ansible/inventory/terraform_hosts.yml"
+ansible_private_key_path = "~/.ssh/id_rsa"
+
+# Uncomment and adjust the stanza below to override sizing or placement for specific VMs.
+# vm_definitions = {
+#   bastion = {
+#     cores       = 4
+#     memory      = 8192
+#     disk_gb     = 60
+#     ip_cidr     = "192.168.125.1/24"
+#     gateway     = "192.168.125.254"
+#     tags        = ["bastion", "guacamole"]
+#     description = "Custom bastion sizing"
+#   }
+# }
