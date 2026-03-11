@@ -1,0 +1,47 @@
+# Terraform
+*.tfvars
+*.tfstate*
+.terraform/
+
+# Ansible
+ansible/.retry
+ansible/*.retry
+ansible/host_vars/*.vault.yml
+ansible/group_vars/*.vault.yml
+
+# Logs
+*.log
+logs/
+
+# Environnements et secrets
+*.env
+*.env.*
+!env.example
+
+# Fichiers temporaires et backup
+*~
+*.bak
+*.swp
+*.tmp
+*.old
+
+# Python (si utilisé dans scripts)
+__pycache__/
+*.pyc
+
+# Fichiers système/éditeur
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Fichiers de test ou de déploiement
+scripts/*.log
+scripts/*.tmp
+
+# Documentation générée
+docs/_build/
+
+# Schémas générés
+schemas/*.png
+schemas/*.svg
