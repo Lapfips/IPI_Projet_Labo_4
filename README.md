@@ -69,6 +69,7 @@ Les schémas sont accessible en SVG ici :
   - Guacamole
   - Jira
   - pfSense
+  - PostgreSQL
   - Proxmox
   - Terraform
   - Zabbix
